@@ -1,11 +1,11 @@
 package tasks;
 
 public class Task {
-    private final int id;
-    private String title;
-    private String description;
-    private TaskStatus status;
-    private final TaskType type;
+    protected int id;
+    protected String title;
+    protected String description;
+    protected TaskStatus status;
+    protected final TaskType type;
 
     public Task(String title, String description, TaskStatus status, TaskType type) {
         this.id = 0;
@@ -15,7 +15,6 @@ public class Task {
         this.type = type;
     }
 
-
     public Task(int id, String title, String description, TaskStatus status, TaskType type) {
         this.id = id;
         this.title = title;
@@ -23,8 +22,6 @@ public class Task {
         this.status = status;
         this.type = type;
     }
-
-    // насклько вообще плохо писать большой геттер для вывода, допустим, всех полей объекта?
 
     public String getTitle() {
         return title;
@@ -38,16 +35,28 @@ public class Task {
         return status;
     }
 
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
     public TaskType getType() {
         return type;
     }
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
     }
 
     @Override
