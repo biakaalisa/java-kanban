@@ -1,9 +1,11 @@
 package tasks;
 
+import manager.TaskManager;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SubtaskTest {
+    private TaskManager taskManager;
 
     @Test
     void testSubtaskCreation() {
@@ -26,5 +28,16 @@ class SubtaskTest {
         Subtask subtask2 = new Subtask(1, "Subtask 2", "Diff", TaskStatus.DONE, 20);
 
         assertEquals(subtask1, subtask2, "Subtask должны быть равны если одинаковый ID");
+    }
+
+    @Test
+    void testSubtaskCannotBeItsOwnEpic() {
+        Epic epic = new Epic("Epic", "Description");
+        int epicId = taskManager.createEpic(epic);
+        Subtask subtask = new Subtask("Subtask", "Desc", TaskStatus.NEW, epicId);
+        int subtaskId = taskManager.createSubtask(subtask);
+        Subtask savedSubtask = taskManager.getSubtaskById(subtaskId);
+        assertNotEquals(savedSubtask.getId(), savedSubtask.getEpicId(),
+                "Subtask не может быть эпиком для самой себя");
     }
 }

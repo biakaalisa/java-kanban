@@ -1,10 +1,3 @@
-// Свято верю, что тестов достаточно, ибо время от времени меня мотает из крайности в крайность
-// то кажется, что их слишком много, то слшком мало. В итоге вообще запуталась как их грамотно раносить по файлам.
-// По какому принципу в основном определяется в какой блок тестов каие тесты будут отнесены?
-// А то просто принципу тут мы работаем с эпиками (файл чисто для эпиков), тут мы работатаем с просто задачами звучит
-// как-то сомнительно. Все равно каша какая-то получается..
-
-
 package manager;
 
 import tasks.*;
@@ -145,25 +138,6 @@ class InMemoryTaskManagerTest {
         assertNull(taskManager.getSubtaskById(subtaskId2));
     }
 
-    @Test
-    void testEpicCannotBeItsOwnSubtask() {
-        Epic epic = new Epic("Epic", "Description");
-        int epicId = taskManager.createEpic(epic);
-        Subtask subtask = new Subtask("Test", "Desc", TaskStatus.NEW, epicId);
-        int subtaskId = taskManager.createSubtask(subtask);
-        assertNotEquals(epicId, subtaskId, "Подзадача не должна иметь тот же ID что и эпик");
-    }
-
-    @Test
-    void testSubtaskCannotBeItsOwnEpic() {
-        Epic epic = new Epic("Epic", "Description");
-        int epicId = taskManager.createEpic(epic);
-        Subtask subtask = new Subtask("Subtask", "Desc", TaskStatus.NEW, epicId);
-        int subtaskId = taskManager.createSubtask(subtask);
-        Subtask savedSubtask = taskManager.getSubtaskById(subtaskId);
-        assertNotEquals(savedSubtask.getId(), savedSubtask.getEpicId(),
-                "Subtask не может быть эпиком для самой себя");
-    }
 
     @Test
     void testTaskIdsDoNotConflict() {

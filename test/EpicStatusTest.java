@@ -70,4 +70,13 @@ class EpicStatusTest {
         assertEquals(TaskStatus.IN_PROGRESS, epic.getStatus(),
                 "Эпик с подзадачами разных статусов должен иметь статус IN_PROGRESS");
     }
+
+    @Test
+    void testEpicCannotBeItsOwnSubtask() {
+        Epic epic = new Epic("Epic", "Description");
+        int epicId = taskManager.createEpic(epic);
+        Subtask subtask = new Subtask("Test", "Desc", TaskStatus.NEW, epicId);
+        int subtaskId = taskManager.createSubtask(subtask);
+        assertNotEquals(epicId, subtaskId, "Подзадача не должна иметь тот же ID что и эпик");
+    }
 }
