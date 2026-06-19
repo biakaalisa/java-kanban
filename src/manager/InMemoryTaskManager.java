@@ -5,11 +5,11 @@ import tasks.*;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> tasks;
-    private final HashMap<Integer, Epic> epics;
-    private final HashMap<Integer, Subtask> subtasks;
-    private final HistoryManager historyManager;
-    private int idCounter = 0;
+    protected final HashMap<Integer, Task> tasks;
+    protected final HashMap<Integer, Epic> epics;
+    protected final HashMap<Integer, Subtask> subtasks;
+    protected final HistoryManager historyManager;
+    protected int idCounter = 0;
 
     public InMemoryTaskManager() {
         this.tasks = new HashMap<>();
@@ -219,7 +219,29 @@ public class InMemoryTaskManager implements TaskManager {
         return result;
     }
 
-    private void updateEpicStatus(int epicId) {
+    protected void addLoadedTask(Task task) {
+        tasks.put(task.getId(), copyTask(task));
+        updateIdCounterAfterLoading(task.getId());
+    }
+
+    protected void addLoadedEpic(Epic epic) {
+        epics.put(epic.getId(), copyEpic(epic));
+        updateIdCounterAfterLoading(epic.getId());
+    }
+
+    protected void addLoadedSubtask(Subtask subtask) {
+        Epic epic = epics.get(subtask.getEpicId());
+        if (epic == null) {
+            return;
+        }
+
+        subtasks.put(subtask.getId(), copySubtask(subtask));
+        epic.addSubtaskId(subtask.getId());
+        updateEpicStatus(epic.getId());
+        updateIdCounterAfterLoading(subtask.getId());
+    }
+
+    protected void updateEpicStatus(int epicId) {
         Epic epic = epics.get(epicId);
         if (epic == null || epic.getSubtaskIds().isEmpty()) {
             if (epic != null) {
@@ -254,7 +276,37 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+<<<<<<< Updated upstream
     private int generateId() {
         return idCounter++;
     }
 }
+=======
+    protected Task copyTask(Task task) {
+        return new Task(task.getId(), task.getTitle(), task.getDescription(), task.getStatus(), task.getType());
+    }
+
+    protected Epic copyEpic(Epic epic) {
+        Epic copy = new Epic(epic.getId(), epic.getTitle(), epic.getDescription(), epic.getStatus());
+        for (Integer subtaskId : epic.getSubtaskIds()) {
+            copy.addSubtaskId(subtaskId);
+        }
+        return copy;
+    }
+
+    protected Subtask copySubtask(Subtask subtask) {
+        return new Subtask(subtask.getId(), subtask.getTitle(), subtask.getDescription(), subtask.getStatus(),
+                subtask.getEpicId());
+    }
+
+    private int generateId() {
+        return idCounter++;
+    }
+
+    private void updateIdCounterAfterLoading(int id) {
+        if (id >= idCounter) {
+            idCounter = id + 1;
+        }
+    }
+}
+>>>>>>> Stashed changes
