@@ -1,9 +1,12 @@
-package manager;
-
-import tasks.*;
+import manager.InMemoryTaskManager;
+import manager.TaskManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import tasks.Epic;
+import tasks.Subtask;
+import tasks.TaskStatus;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EpicStatusTest {
     private TaskManager taskManager;
@@ -19,16 +22,15 @@ class EpicStatusTest {
     @Test
     void testEpicStatusNewWhenEmpty() {
         Epic epic = taskManager.getEpicById(epicId);
+
         assertEquals(TaskStatus.NEW, epic.getStatus(),
                 "Пустой эпик должен иметь статус NEW");
     }
 
     @Test
     void testEpicStatusNewWhenAllSubtasksNew() {
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание",
-                TaskStatus.NEW, epicId);
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание",
-                TaskStatus.NEW, epicId);
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание", TaskStatus.NEW, epicId);
+        Subtask subtask2 = new Subtask("Подзадача 2", "Описание", TaskStatus.NEW, epicId);
 
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
@@ -40,10 +42,8 @@ class EpicStatusTest {
 
     @Test
     void testEpicStatusDoneWhenAllSubtasksDone() {
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание",
-                TaskStatus.DONE, epicId);
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание",
-                TaskStatus.DONE, epicId);
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание", TaskStatus.DONE, epicId);
+        Subtask subtask2 = new Subtask("Подзадача 2", "Описание", TaskStatus.DONE, epicId);
 
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
@@ -55,12 +55,9 @@ class EpicStatusTest {
 
     @Test
     void testEpicStatusInProgressWhenMixed() {
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание",
-                TaskStatus.NEW, epicId);
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание",
-                TaskStatus.DONE, epicId);
-        Subtask subtask3 = new Subtask("Подзадача 3", "Описание",
-                TaskStatus.IN_PROGRESS, epicId);
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание", TaskStatus.NEW, epicId);
+        Subtask subtask2 = new Subtask("Подзадача 2", "Описание", TaskStatus.DONE, epicId);
+        Subtask subtask3 = new Subtask("Подзадача 3", "Описание", TaskStatus.IN_PROGRESS, epicId);
 
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
