@@ -1,8 +1,11 @@
-package tasks;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tasks.Epic;
+import tasks.TaskStatus;
+import tasks.TaskType;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EpicTest {
@@ -64,7 +67,9 @@ class EpicTest {
         epic.addSubtaskId(1);
         epic.addSubtaskId(2);
         epic.addSubtaskId(3);
+
         epic.clearSubtaskIds();
+
         assertTrue(epic.getSubtaskIds().isEmpty(), "Список подзадач должен быть пустым после очистки");
     }
 
@@ -75,5 +80,4 @@ class EpicTest {
 
         assertEquals(epic1, epic2, "Epic должны быть равны если одинаковый ID");
     }
-
 }
