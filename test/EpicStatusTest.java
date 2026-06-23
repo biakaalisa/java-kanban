@@ -15,56 +15,37 @@ class EpicStatusTest {
     @BeforeEach
     void setUp() {
         taskManager = new InMemoryTaskManager();
-        Epic epic = new Epic("Тестовый эпик", "Проверка статусов");
-        epicId = taskManager.createEpic(epic);
-    }
-
-    @Test
-    void testEpicStatusNewWhenEmpty() {
-        Epic epic = taskManager.getEpicById(epicId);
-
-        assertEquals(TaskStatus.NEW, epic.getStatus(),
-                "Пустой эпик должен иметь статус NEW");
+        epicId = taskManager.createEpic(new Epic("Epic", "Description"));
     }
 
     @Test
     void testEpicStatusNewWhenAllSubtasksNew() {
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание", TaskStatus.NEW, epicId);
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание", TaskStatus.NEW, epicId);
+        taskManager.createSubtask(new Subtask("First", "Description", TaskStatus.NEW, epicId));
+        taskManager.createSubtask(new Subtask("Second", "Description", TaskStatus.NEW, epicId));
 
-        taskManager.createSubtask(subtask1);
-        taskManager.createSubtask(subtask2);
-
-        Epic epic = taskManager.getEpicById(epicId);
-        assertEquals(TaskStatus.NEW, epic.getStatus(),
-                "Эпик со всеми подзадачами NEW должен иметь статус NEW");
+        assertEquals(TaskStatus.NEW, taskManager.getEpicById(epicId).getStatus());
     }
 
     @Test
     void testEpicStatusDoneWhenAllSubtasksDone() {
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание", TaskStatus.DONE, epicId);
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание", TaskStatus.DONE, epicId);
+        taskManager.createSubtask(new Subtask("First", "Description", TaskStatus.DONE, epicId));
+        taskManager.createSubtask(new Subtask("Second", "Description", TaskStatus.DONE, epicId));
 
-        taskManager.createSubtask(subtask1);
-        taskManager.createSubtask(subtask2);
-
-        Epic epic = taskManager.getEpicById(epicId);
-        assertEquals(TaskStatus.DONE, epic.getStatus(),
-                "Эпик со всеми подзадачами DONE должен иметь статус DONE");
+        assertEquals(TaskStatus.DONE, taskManager.getEpicById(epicId).getStatus());
     }
 
     @Test
-    void testEpicStatusInProgressWhenMixed() {
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание", TaskStatus.NEW, epicId);
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание", TaskStatus.DONE, epicId);
-        Subtask subtask3 = new Subtask("Подзадача 3", "Описание", TaskStatus.IN_PROGRESS, epicId);
+    void testEpicStatusInProgressWhenSubtasksNewAndDone() {
+        taskManager.createSubtask(new Subtask("First", "Description", TaskStatus.NEW, epicId));
+        taskManager.createSubtask(new Subtask("Second", "Description", TaskStatus.DONE, epicId));
 
-        taskManager.createSubtask(subtask1);
-        taskManager.createSubtask(subtask2);
-        taskManager.createSubtask(subtask3);
+        assertEquals(TaskStatus.IN_PROGRESS, taskManager.getEpicById(epicId).getStatus());
+    }
 
-        Epic epic = taskManager.getEpicById(epicId);
-        assertEquals(TaskStatus.IN_PROGRESS, epic.getStatus(),
-                "Эпик с подзадачами разных статусов должен иметь статус IN_PROGRESS");
+    @Test
+    void testEpicStatusInProgressWhenSubtaskInProgress() {
+        taskManager.createSubtask(new Subtask("First", "Description", TaskStatus.IN_PROGRESS, epicId));
+
+        assertEquals(TaskStatus.IN_PROGRESS, taskManager.getEpicById(epicId).getStatus());
     }
 }

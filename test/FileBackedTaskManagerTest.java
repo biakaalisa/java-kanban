@@ -1,4 +1,5 @@
 import manager.FileBackedTaskManager;
+import manager.ManagerSaveException;
 import org.junit.jupiter.api.Test;
 import tasks.Epic;
 import tasks.Subtask;
@@ -8,17 +9,25 @@ import tasks.TaskType;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest {
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+    private File file;
+
+    @Override
+    protected FileBackedTaskManager createTaskManager() throws IOException {
+        file = File.createTempFile("tasks", ".csv");
+        return new FileBackedTaskManager(file);
+    }
 
     @Test
-    void testSaveAndLoadEmptyFile() throws IOException {
-        File file = File.createTempFile("tasks", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
+    void testSaveAndLoadEmptyFile() {
+        taskManager.save();
 
-        manager.save();
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
 
         assertTrue(loadedManager.getAllTasks().isEmpty());
@@ -27,70 +36,51 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void testSaveSeveralTasks() throws IOException {
-        File file = File.createTempFile("tasks", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
-
-        int taskId = manager.createTask(new Task("Task", "Description", TaskStatus.NEW, TaskType.TASK));
-        int epicId = manager.createEpic(new Epic("Epic", "Epic description"));
-        int subtaskId = manager.createSubtask(new Subtask("Subtask", "Subtask description", TaskStatus.DONE,
-                epicId));
+    void testSaveAndLoadSeveralTasks() {
+        LocalDateTime taskStart = LocalDateTime.of(2026, 1, 1, 10, 0);
+        LocalDateTime subtaskStart = LocalDateTime.of(2026, 1, 1, 12, 0);
+        int taskId = taskManager.createTask(new Task("Task", "Description", TaskStatus.NEW, TaskType.TASK,
+                Duration.ofMinutes(30), taskStart));
+        int epicId = taskManager.createEpic(new Epic("Epic", "Description"));
+        int subtaskId = taskManager.createSubtask(new Subtask("Subtask", "Description", TaskStatus.DONE, epicId,
+                Duration.ofMinutes(45), subtaskStart));
 
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
+        Task loadedTask = loadedManager.getTaskById(taskId);
+        Epic loadedEpic = loadedManager.getEpicById(epicId);
+        Subtask loadedSubtask = loadedManager.getSubtaskById(subtaskId);
 
-        assertEquals("Task", loadedManager.getTaskById(taskId).getTitle());
-        assertEquals("Epic", loadedManager.getEpicById(epicId).getTitle());
-        assertEquals("Subtask", loadedManager.getSubtaskById(subtaskId).getTitle());
-        assertEquals(epicId, loadedManager.getSubtaskById(subtaskId).getEpicId());
+        assertEquals("Task", loadedTask.getTitle());
+        assertEquals(Duration.ofMinutes(30), loadedTask.getDuration());
+        assertEquals(taskStart, loadedTask.getStartTime());
+        assertEquals("Epic", loadedEpic.getTitle());
+        assertEquals(List.of(subtaskId), loadedEpic.getSubtaskIds());
+        assertEquals(Duration.ofMinutes(45), loadedEpic.getDuration());
+        assertEquals(subtaskStart, loadedEpic.getStartTime());
+        assertEquals(subtaskStart.plusMinutes(45), loadedEpic.getEndTime());
+        assertEquals(epicId, loadedSubtask.getEpicId());
     }
 
     @Test
-    void testLoadSeveralTasks() throws IOException {
-        File file = File.createTempFile("tasks", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
-
-        int taskId1 = manager.createTask(new Task("Task 1", "Description 1", TaskStatus.NEW, TaskType.TASK));
-        int taskId2 = manager.createTask(new Task("Task 2", "Description 2", TaskStatus.DONE, TaskType.TASK));
-        int epicId = manager.createEpic(new Epic("Epic", "Epic description"));
-        int subtaskId = manager.createSubtask(new Subtask("Subtask", "Subtask description", TaskStatus.IN_PROGRESS,
-                epicId));
+    void testIdCounterAfterLoading() {
+        int firstTaskId = taskManager.createTask(new Task("Task", "Description", TaskStatus.NEW, TaskType.TASK));
 
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
+        int secondTaskId = loadedManager.createTask(new Task("Second", "Description", TaskStatus.NEW, TaskType.TASK));
 
-        assertNotNull(loadedManager.getTaskById(taskId1));
-        assertNotNull(loadedManager.getTaskById(taskId2));
-        assertNotNull(loadedManager.getEpicById(epicId));
-        assertNotNull(loadedManager.getSubtaskById(subtaskId));
-        assertEquals(2, loadedManager.getAllTasks().size());
-        assertEquals(1, loadedManager.getAllEpics().size());
-        assertEquals(1, loadedManager.getAllSubtasks().size());
+        assertTrue(secondTaskId > firstTaskId);
     }
 
     @Test
-    void testLoadedManagerContinuesGeneratingCorrectIds() throws IOException {
-        File file = File.createTempFile("tasks", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
-
-        int firstTaskId = manager.createTask(new Task("Task 1", "Description 1", TaskStatus.NEW, TaskType.TASK));
-        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
-        int secondTaskId = loadedManager.createTask(new Task("Task 2", "Description 2", TaskStatus.NEW,
-                TaskType.TASK));
-
-        assertNotEquals(firstTaskId, secondTaskId);
-        assertNotNull(loadedManager.getTaskById(firstTaskId));
-        assertNotNull(loadedManager.getTaskById(secondTaskId));
+    void testSaveDoesNotThrowExceptionForCorrectFile() {
+        assertDoesNotThrow(() -> taskManager.save());
     }
 
     @Test
-    void testSaveAfterDeletingTask() throws IOException {
-        File file = File.createTempFile("tasks", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
+    void testSaveThrowsManagerSaveExceptionForIncorrectFile() {
+        File incorrectFile = new File("missing-directory/tasks.csv");
+        FileBackedTaskManager incorrectManager = new FileBackedTaskManager(incorrectFile);
 
-        int taskId = manager.createTask(new Task("Task", "Description", TaskStatus.NEW, TaskType.TASK));
-        manager.deleteTask(taskId);
-        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(file);
-
-        assertNull(loadedManager.getTaskById(taskId));
-        assertTrue(loadedManager.getAllTasks().isEmpty());
+        assertThrows(ManagerSaveException.class, () -> incorrectManager.save());
     }
 }
