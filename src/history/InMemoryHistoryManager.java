@@ -87,7 +87,8 @@ public class InMemoryHistoryManager implements HistoryManager {
     private Task createTaskCopy(Task task) {
         if (task instanceof Epic) {
             Epic epic = (Epic) task;
-            Epic copy = new Epic(epic.getId(), epic.getTitle(), epic.getDescription(), epic.getStatus());
+            Epic copy = new Epic(epic.getId(), epic.getTitle(), epic.getDescription(), epic.getStatus(),
+                    epic.getDuration(), epic.getStartTime(), epic.getEndTime());
             for (Integer subtaskId : epic.getSubtaskIds()) {
                 copy.addSubtaskId(subtaskId);
             }
@@ -97,10 +98,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (task instanceof Subtask) {
             Subtask subtask = (Subtask) task;
             return new Subtask(subtask.getId(), subtask.getTitle(), subtask.getDescription(), subtask.getStatus(),
-                    subtask.getEpicId());
+                    subtask.getEpicId(), subtask.getDuration(), subtask.getStartTime());
         }
 
-        return new Task(task.getId(), task.getTitle(), task.getDescription(), task.getStatus(), task.getType());
+        return new Task(task.getId(), task.getTitle(), task.getDescription(), task.getStatus(), task.getType(),
+                task.getDuration(), task.getStartTime());
     }
 
     private static class Node {
