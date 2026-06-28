@@ -32,23 +32,23 @@ public abstract class BaseHttpHandler implements HttpHandler {
     }
 
     protected void sendText(HttpExchange exchange, String text) throws IOException {
-        sendResponse(exchange, text, 200);
+        sendResponse(exchange, text, HttpStatusCode.OK);
     }
 
     protected void sendCreated(HttpExchange exchange) throws IOException {
-        sendResponse(exchange, "", 201);
+        sendResponse(exchange, "", HttpStatusCode.CREATED);
     }
 
     protected void sendNotFound(HttpExchange exchange) throws IOException {
-        sendResponse(exchange, "{\"error\":\"Объект не найден\"}", 404);
+        sendResponse(exchange, "{\"error\":\"Объект не найден\"}", HttpStatusCode.NOT_FOUND);
     }
 
     protected void sendHasInteractions(HttpExchange exchange) throws IOException {
-        sendResponse(exchange, "{\"error\":\"Задача пересекается с существующими\"}", 406);
+        sendResponse(exchange, "{\"error\":\"Задача пересекается с существующими\"}", HttpStatusCode.NOT_ACCEPTABLE);
     }
 
     protected void sendServerError(HttpExchange exchange) throws IOException {
-        sendResponse(exchange, "{\"error\":\"Ошибка сервера\"}", 500);
+        sendResponse(exchange, "{\"error\":\"Ошибка сервера\"}", HttpStatusCode.INTERNAL_SERVER_ERROR);
     }
 
     protected String readBody(HttpExchange exchange) throws IOException {
@@ -80,10 +80,10 @@ public abstract class BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendResponse(HttpExchange exchange, String text, int statusCode) throws IOException {
+    private void sendResponse(HttpExchange exchange, String text, HttpStatusCode statusCode) throws IOException {
         byte[] response = text.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        exchange.sendResponseHeaders(statusCode, response.length);
+        exchange.sendResponseHeaders(statusCode.getCode(), response.length);
         exchange.getResponseBody().write(response);
         exchange.close();
     }
