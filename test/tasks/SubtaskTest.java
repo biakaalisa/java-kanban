@@ -1,6 +1,7 @@
 package tasks;
 
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SubtaskTest {
@@ -8,6 +9,7 @@ class SubtaskTest {
     @Test
     void testSubtaskCreation() {
         Subtask subtask = new Subtask("Test Subtask", "Description", TaskStatus.NEW, 1);
+
         assertNotNull(subtask, "Подзадача не должна быть null");
         assertEquals("Test Subtask", subtask.getTitle());
         assertEquals(TaskType.SUBTASK, subtask.getType());
@@ -17,6 +19,7 @@ class SubtaskTest {
     @Test
     void testGetEpicId() {
         Subtask subtask = new Subtask(1, "Test", "Desc", TaskStatus.NEW, 5);
+
         assertEquals(5, subtask.getEpicId(), "Некорректный epicId");
     }
 
